@@ -1,0 +1,87 @@
+[
+ {
+  "directory": "/home/burton/dev/c/tilemap_creator",
+  "arguments": [
+   "clang",
+   "src/hashing.c",
+   "-c",
+   "-std=c11",
+   "-Wall",
+   "-Wextra",
+   "-pedantic",
+   "-I./include",
+   "-I/usr/include/SDL2",
+   "-o",
+   "bin/hashing.o"
+  ],
+  "file": "src/hashing.c"
+ },
+ {
+  "directory": "/home/burton/dev/c/tilemap_creator",
+  "arguments": [
+   "clang",
+   "src/main.c",
+   "-c",
+   "-std=c11",
+   "-Wall",
+   "-Wextra",
+   "-pedantic",
+   "-I./include",
+   "-I/usr/include/SDL2",
+   "-o",
+   "bin/main.o"
+  ],
+  "file": "src/main.c"
+ },
+ {
+  "directory": "/home/burton/dev/c/tilemap_creator",
+  "arguments": [
+   "clang",
+   "src/tiles.c",
+   "-c",
+   "-std=c11",
+   "-Wall",
+   "-Wextra",
+   "-pedantic",
+   "-I./include",
+   "-I/usr/include/SDL2",
+   "-o",
+   "bin/tiles.o"
+  ],
+  "file": "src/tiles.c"
+ },
+ {
+  "directory": "/home/burton/dev/c/tilemap_creator",
+  "arguments": [
+   "clang",
+   "src/paletted_bmp_parser.c",
+   "-c",
+   "-std=c11",
+   "-Wall",
+   "-Wextra",
+   "-pedantic",
+   "-I./include",
+   "-I/usr/include/SDL2",
+   "-o",
+   "bin/paletted_bmp_parser.o"
+  ],
+  "file": "src/paletted_bmp_parser.c"
+ },
+ {
+  "directory": "/home/burton/dev/c/tilemap_creator",
+  "arguments": [
+   "clang",
+   "src/tileset_maker.c",
+   "-c",
+   "-std=c11",
+   "-Wall",
+   "-Wextra",
+   "-pedantic",
+   "-I./include",
+   "-I/usr/include/SDL2",
+   "-o",
+   "bin/tileset_maker.o"
+  ],
+  "file": "src/tileset_maker.c"
+ }
+]
