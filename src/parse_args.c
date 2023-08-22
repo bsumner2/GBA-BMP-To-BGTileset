@@ -6,10 +6,10 @@
 #include <string.h>
 #include <assert.h>
 #include <ctype.h>
-// Args:
-//      --
-//      --
-//      
+/* Args:
+ *      --
+ *      --
+ */     
 static char buff[256];
 static char *tmp, *tmp2;
 #define ERRMSG "\x1b[1;34m[Error]:\x1b[0m "

@@ -215,7 +215,7 @@ static int HashPut__8(GBATile_HashTable *table, uint8_t *tile,
     table->table[origidx] = tmp_to_add;
     return 0;
   }
-  // ELSE add to tail of bucket at hash idx origidx.
+  /* ELSE add to tail of bucket at hash idx origidx. */
   curr->nxt = tmp_to_add;
   return 0;
 }

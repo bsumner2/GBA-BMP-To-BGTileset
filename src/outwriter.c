@@ -28,11 +28,10 @@ uint8_t setup_outbuff_paths(char *fullpath, const char *basename, int fplen,
   basename_len = base_len;
   path_strlen = fplen;
   pathbuff = fullpath;
-  ((uint64_t*)outfname_base)[0] = 0ULL;
-  ((uint64_t*)outfname_base)[1] = 0ULL;
+  ((uint64_t*)outfname_base)[0] = 0UL;
+  ((uint64_t*)outfname_base)[1] = 0UL;
   strncpy(outfname_base, basename, base_len);
   pathbuff[fplen-2] = '.';
-  printf("fplen = %d\n", fplen);
   pathbuff[fplen-1] = 'c';
   return 1;
 }

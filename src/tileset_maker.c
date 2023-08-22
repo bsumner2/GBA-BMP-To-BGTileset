@@ -92,10 +92,10 @@ void TileSet_Data_Close(TileSet_Data *ref) {
   free((void*)(ref->tileset));
   free((void*)(ref->tilemap));
 
-  // We dont free the TileSet_Data instance, itself, since the interface calls
-  // for any use to be with a static object (not dynamically alloc'd). As such 
-  // if the instance is a heap inst, then it's up to the end user to free it
-  // themselves after calling this function to close the buffers.
+  /* We dont free the TileSet_Data instance, itself, since the interface calls
+   * for any use to be with a static object (not dynamically alloc'd). As such 
+   * if the instance is a heap inst, then it's up to the end user to free it
+   * themselves after calling this function to close the buffers. */
 }
 
 

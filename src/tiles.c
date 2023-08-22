@@ -29,11 +29,11 @@ void VFlipTile_4bpp(uint8_t *tile) {
     return;
   for (i = 0, j = 3; i < j; ++i, --j) {
     tmp = 
-      (0x00000000FFFFFFFFULL&(tcast[i]>>32)) |
-      (0xFFFFFFFF00000000ULL&(tcast[i]<<32));
+      (0x00000000FFFFFFFFUL&(tcast[i]>>32)) |
+      (0xFFFFFFFF00000000UL&(tcast[i]<<32));
     tcast[i] = 
-      (0x00000000FFFFFFFFULL&(tcast[j]>>32)) |
-      (0xFFFFFFFF00000000ULL&(tcast[j]<<32));
+      (0x00000000FFFFFFFFUL&(tcast[j]>>32)) |
+      (0xFFFFFFFF00000000UL&(tcast[j]<<32));
     tcast[j] = tmp;
   }
 }

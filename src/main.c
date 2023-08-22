@@ -159,8 +159,8 @@ static void DisplayTiles(TileSet_Data *data, SDL_Window **window,
 
 
   for (i = 0; i < data->tileset_len; ++i, xoff += 32) {
-    if (!(i&0x1F)) {
-      yoff = i<<5;
+    if (i && !(i&0x1F)) {
+      yoff += 32;
       xoff = 0;
     }
 
@@ -270,8 +270,8 @@ static void DisplayPalette(TileSet_Data *data, SDL_Window **window,
 #define MODE_MAP 1U
 #define MODE_PAL 2U
 #define MODE_TILES 4U
-#define VALID_MODES_MASK 7U  // Derived from MODE_MAP|MODE_PAL|MODE_TILES =
-                            // 1|2|4 = 0b001|0b010|0b100 = 0b111 = 7
+#define VALID_MODES_MASK 7U  /* Derived from MODE_MAP|MODE_PAL|MODE_TILES =
+                              * 1|2|4 = 0b001|0b010|0b100 = 0b111 = 7 */
 
 
 static uint8_t handle_keypress(SDL_Event ev, uint8_t mode_bf, uint8_t *palno) {

@@ -1,3 +1,4 @@
+#include "hashing.h"
 #include "pal_bmp.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -5,6 +6,120 @@
 #include <assert.h>
 
 #define ERR_PREFIX "\x1b[1;31m[Error]:\x1b[0m "
+
+static Paletted_Bitmap *ParseBMPNonIndexed(Paletted_Bitmap *dest, 
+    FILE *bmp, uint8_t *header, uint8_t mallocd_ret) {
+  HexCode_HashTable *table;
+  uint8_t *pdata;
+  size_t pbuf_offset;
+  size_t rowlen, padlen;
+  uint32_t color;
+  int i, j, bytes_per_px, row_off;
+  uint8_t bpp, retidx;
+  if (mallocd_ret) {
+    if (dest==NULL)
+      dest = (Paletted_Bitmap*)malloc(sizeof(Paletted_Bitmap));
+    else
+      mallocd_ret = 0;
+  }
+  pbuf_offset = (*(uint32_t*) (header + 10));
+  bpp = header[28];
+  printf("\x1b[1;34mBit Depth:\x1b[0m %d\n", bpp);
+  bytes_per_px = bpp/8;
+  dest->width = (*(int*) (header + 18));
+  dest->height = (*(int*) (header + 22));
+  if ((dest->width != 256 && dest->width != 512) ||
+      (dest->height != 256 && dest->height != 512)) {
+    fprintf(stderr, ERR_PREFIX"Bitmap size is not valid size for GBA tilemap\n"
+        "Valid sizes are: \x1b[1;34m256x256\x1b[0m, \x1b[1;34m256x512\x1b[0m, "
+        "\x1b[1;34m512x256\x1b[0m, and \x1b[1;34m512x512\x1b[0m\n");
+    if (mallocd_ret)
+      free((void*)dest);
+    fclose(bmp);
+    return NULL;
+  }
+
+  padlen = (((((size_t)bpp*dest->width) + 31)>>5)<<2)
+    - (rowlen = (dest->width*bpp)>>3);
+    
+  if (0 > fseek(bmp, pbuf_offset, SEEK_SET)) {
+    perror(ERR_PREFIX"Failed to seek bitmap data stream to pixel data.\n"
+        "Details from fseek's set errno: ");
+    if (mallocd_ret)
+      free((void*)dest);
+    fclose(bmp);
+    return NULL;
+  }
+  if (!(table = HexCodeTableCreate(bpp))) {
+    fprintf(stderr, ERR_PREFIX"Failed to allocate the hexcodes hash table.\n");
+    if (mallocd_ret)
+      free((void*)dest);
+    fclose(bmp);
+    return NULL;
+  }
+  pdata = (uint8_t*)calloc(dest->width*dest->height, sizeof(uint8_t));
+
+  for (i=dest->height-1; i > -1; --i) {
+    /* Since bitmap pixel arrays are stored upside-down for god knows what 
+     * reason */
+    row_off = i*dest->width;
+    for (j=0;j<dest->width;++j) {
+      color = 0;
+      if ((unsigned)bytes_per_px != 
+          fread(((void*) (&color)), 1, bytes_per_px, bmp)) {
+        perror(ERR_PREFIX"Failed to parse color from pixel data in bitmap."
+            "Details from errno set: ");
+        free((void*)pdata);
+        HexCodeTableDestroy(table);
+        fclose(bmp);
+        if (mallocd_ret)
+          free((void*)dest);
+        return NULL;
+      }
+      if (0 > (retidx = (uint8_t)HexCodeTablePut(table, color))) {
+        free((void*)pdata);
+        HexCodeTableDestroy(table);
+        fclose(bmp);
+        if (mallocd_ret)
+          free((void*)dest);
+        return NULL;
+      }
+
+      pdata[row_off + j] = retidx;
+    }
+
+
+    if (!padlen)
+      continue;
+    printf("\x1b[1;31mPadding Detected. Shouldn't need padding.\n\x1b[0m");
+    if (0 > fseek(bmp, padlen, SEEK_CUR)) {
+      perror(ERR_PREFIX"Could not seek file stream track to next line of "
+          "pixel data.\nDetails from set errno: ");
+      free((void*)pdata);
+      HexCodeTableDestroy(table);
+      if (mallocd_ret)
+        free((void*)dest);
+      fclose(bmp);
+      return NULL;
+    }
+  }
+  fclose(bmp);
+  dest->pbuf = pdata;
+  dest->pbuflen = dest->width*dest->height;
+  dest->pal = HexCodeTableDealloc(table, &(dest->pallen));
+  if (!(dest->pal)) {
+    free((void*)pdata);
+    HexCodeTableDestroy(table);
+    if (mallocd_ret)
+      free((void*)dest);
+    return NULL;
+  }
+  dest->bpp = 8;
+  return dest;
+}
+
+
+
 Paletted_Bitmap *ParseBMP8BPP(Paletted_Bitmap *dest, const char *srcpath) {
   FILE *bmp = fopen(srcpath, "r");
   uint8_t *hdr;
@@ -46,14 +161,6 @@ Paletted_Bitmap *ParseBMP8BPP(Paletted_Bitmap *dest, const char *srcpath) {
     return NULL;
   }
   pdata_offset = (*(uint32_t *) (hdr+10));
-  /* Make sure bitmap is an 8bpp paletted bitmap. */
-  if (8 != hdr[28]) {
-    fprintf(stderr, ERR_PREFIX"Expected an 8bpp bitmap. Received a %ubpp "
-        "bitmap\n", hdr[28]);
-    free((void*)hdr);
-    fclose(bmp);
-    return NULL;
-  }
 
   if ((*(uint32_t *) (hdr + 30))) {
     fprintf(stderr, ERR_PREFIX"Unsupported Bitmap pixel data compression "
@@ -63,6 +170,18 @@ Paletted_Bitmap *ParseBMP8BPP(Paletted_Bitmap *dest, const char *srcpath) {
     fclose(bmp);
     return NULL;
   }
+
+  /* Make sure bitmap is an 8bpp paletted bitmap. */
+  if (8 != hdr[28]) {
+    if (hdr[28]==24 || hdr[28]==32)
+      return ParseBMPNonIndexed(dest, bmp, hdr, mallocret);
+    fprintf(stderr, ERR_PREFIX"Expected an 8bpp bitmap. Received a %ubpp "
+        "bitmap\n", hdr[28]);
+    free((void*)hdr);
+    fclose(bmp);
+    return NULL;
+  }
+
 
   if (mallocret)
     dest = (Paletted_Bitmap*)malloc(sizeof(Paletted_Bitmap));

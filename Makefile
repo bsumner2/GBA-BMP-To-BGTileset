@@ -6,7 +6,7 @@ LDFLAGS=$(GENERAL_FLAGS) $(LIBS)
 INCS=-I./include ${shell pkg-config --cflags libmd sdl2}
 LIBS=${shell pkg-config --libs libmd sdl2}
 EXE=test.elf
-OBJS=${shell find ./src -type f -iname *.c | sed 's-\./src-\./bin-g' | sed 's-\.c-\.o-g'}
+OBJS=${shell find ./src -type f -iname '*.c' | sed 's-\./src-\./bin-g' | sed 's-\.c-\.o-g'}
 
 .PHONY: clean build run
 
